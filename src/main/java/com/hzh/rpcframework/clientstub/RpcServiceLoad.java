@@ -63,10 +63,10 @@ public class RpcServiceLoad {
                 .handler(new ChannelInitializer<SocketChannel>() {
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
                         // TODO: 2017/8/2 增加粘包半包支持,编码，解码
-                        socketChannel.pipeline().addLast("frameDecoder",
-                                new LengthFieldBasedFrameDecoder(65535, 0, 2,0,2));
+//                        socketChannel.pipeline().addLast("frameDecoder",
+//                                new LengthFieldBasedFrameDecoder(65535, 0, 2,0,2));
                         socketChannel.pipeline().addLast("msgpack decoder", new MsgDecoder());
-                        socketChannel.pipeline().addLast("frameEncoder", new LengthFieldPrepender(2));
+//                        socketChannel.pipeline().addLast("frameEncoder", new LengthFieldPrepender(2));
                         socketChannel.pipeline().addLast("msgpack encoder", new MsgEncoder());
                         socketChannel.pipeline().addLast(new MessageSendHandler());
                     }
@@ -76,7 +76,14 @@ public class RpcServiceLoad {
         f.addListener(new ChannelFutureListener() {
             public void operationComplete(ChannelFuture channelFuture) throws Exception {
                 if(channelFuture.isSuccess()){
-                    messageHandlder = channelFuture.channel().pipeline().get(MessageSendHandler.class);
+                    try{
+                        lock.lock();
+                        System.out.printf("%s","connect completed");
+                        messageHandlder = channelFuture.channel().pipeline().get(MessageSendHandler.class);
+                        signal.signalAll();
+                    }finally {
+                        lock.unlock();
+                    }
                 }
             }
         });

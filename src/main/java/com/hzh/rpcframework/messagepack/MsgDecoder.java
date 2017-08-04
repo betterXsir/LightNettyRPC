@@ -19,5 +19,6 @@ public class MsgDecoder extends MessageToMessageDecoder<ByteBuf>{
         byteBuf.getBytes(byteBuf.readerIndex(), array, 0, length);
         MessagePack msgpack = new MessagePack();
         list.add(msgpack.read(array));
+        System.out.println("message decoding");
     }
 }

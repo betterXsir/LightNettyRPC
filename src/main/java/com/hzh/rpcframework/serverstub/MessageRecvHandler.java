@@ -22,6 +22,7 @@ public class MessageRecvHandler extends ChannelInboundHandlerAdapter{
         Object service = null;
         Method method = null;
         Object res = null;
+        System.out.println("message received");
         try {
             classobject = Class.forName("com.hzh.rpcframework.services." + req.getClassName());
             service = classobject.newInstance();

@@ -13,5 +13,6 @@ public class MsgEncoder extends MessageToByteEncoder<Object>{
         MessagePack msgpack = new MessagePack();
         byte[] raw = msgpack.write(o);
         byteBuf.writeBytes(raw);
+        System.out.println("message encoding");
     }
 }

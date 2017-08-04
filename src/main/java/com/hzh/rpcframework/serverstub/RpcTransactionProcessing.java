@@ -44,10 +44,10 @@ public class RpcTransactionProcessing {
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
-                        socketChannel.pipeline().addLast("frameDecoder", new LengthFieldBasedFrameDecoder(65535,0,2,0,2));
-                        socketChannel.pipeline().addLast("msgpack decoder", new MsgDecoder());
-                        socketChannel.pipeline().addLast("frameEncoder", new LengthFieldPrepender(2));
+//                        socketChannel.pipeline().addLast("frameDecoder", new LengthFieldBasedFrameDecoder(65535,0,2,0,2));
                         socketChannel.pipeline().addLast("msgpack encoder", new MsgEncoder());
+                        socketChannel.pipeline().addLast("msgpack decoder", new MsgDecoder());
+//                        socketChannel.pipeline().addLast("frameEncoder", new LengthFieldPrepender(2));
                         socketChannel.pipeline().addLast(new MessageRecvHandler());
                     }
                 });

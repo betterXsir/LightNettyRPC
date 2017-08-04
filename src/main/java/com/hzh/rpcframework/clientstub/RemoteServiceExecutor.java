@@ -1,5 +1,7 @@
 package com.hzh.rpcframework.clientstub;
 
+import java.lang.reflect.Proxy;
+
 /**
  * Created by huzhenhua on 2017/8/2.
  */
@@ -23,6 +25,6 @@ public class RemoteServiceExecutor {
     }
 
     public Object execute(Object obj){
-        return RPCMessageProxy.getProxyInstance(obj);
+        return Proxy.newProxyInstance(obj.getClass().getClassLoader(), obj.getClass().getInterfaces(), new RPCMessageProxy(obj));
     }
 }
