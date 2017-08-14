@@ -1,6 +1,5 @@
 package com.hzh.rpcframework.clientstub;
 
-import com.hzh.rpcframework.entity.InetAdress;
 import com.hzh.rpcframework.messagepack.MsgDecoder;
 import com.hzh.rpcframework.messagepack.MsgEncoder;
 import io.netty.bootstrap.Bootstrap;
@@ -14,6 +13,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
 
+import java.util.ArrayList;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -24,11 +24,14 @@ import java.util.concurrent.locks.ReentrantLock;
 public class RpcServiceLoad {
     private String host;
     private int port;
-    private MessageSendHandler messageHandlder;
+
+    private ArrayList<MessageSendHandler> messageSendHandlers;
     private static volatile RpcServiceLoad loader;
+
     private ReentrantLock lock;
     private Condition signal;
-    // TODO: 2017/8/3 根据cpu并发数来初始化netty线程组的个数
+    //java虚拟机可用的处理器数量
+    private final static int parallel = Runtime.getRuntime().availableProcessors()*2;
     private NioEventLoopGroup group;
 
     public static RpcServiceLoad getInstance(){
@@ -43,10 +46,10 @@ public class RpcServiceLoad {
     }
 
     public RpcServiceLoad(){
-        messageHandlder = null;
+        messageSendHandlers = new ArrayList<>();
         lock = new ReentrantLock();
         signal = lock.newCondition();
-        group = new NioEventLoopGroup();
+        group = new NioEventLoopGroup(parallel);
         host = "127.0.0.1";
         port = 8080;
     }
@@ -63,10 +66,10 @@ public class RpcServiceLoad {
                 .handler(new ChannelInitializer<SocketChannel>() {
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
                         // TODO: 2017/8/2 增加粘包半包支持,编码，解码
-//                        socketChannel.pipeline().addLast("frameDecoder",
-//                                new LengthFieldBasedFrameDecoder(65535, 0, 2,0,2));
+                        socketChannel.pipeline().addLast("frameDecoder",
+                                new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4,0,4));
                         socketChannel.pipeline().addLast("msgpack decoder", new MsgDecoder());
-//                        socketChannel.pipeline().addLast("frameEncoder", new LengthFieldPrepender(2));
+                        socketChannel.pipeline().addLast("frameEncoder", new LengthFieldPrepender(4));
                         socketChannel.pipeline().addLast("msgpack encoder", new MsgEncoder());
                         socketChannel.pipeline().addLast(new MessageSendHandler());
                     }
@@ -76,10 +79,11 @@ public class RpcServiceLoad {
         f.addListener(new ChannelFutureListener() {
             public void operationComplete(ChannelFuture channelFuture) throws Exception {
                 if(channelFuture.isSuccess()){
+                    System.out.printf("%s","connect completed");
+                    MessageSendHandler messageHandlder = channelFuture.channel().pipeline().get(MessageSendHandler.class);
                     try{
                         lock.lock();
-                        System.out.printf("%s","connect completed");
-                        messageHandlder = channelFuture.channel().pipeline().get(MessageSendHandler.class);
+                        messageSendHandlers.add(messageHandlder);
                         signal.signalAll();
                     }finally {
                         lock.unlock();
@@ -89,31 +93,20 @@ public class RpcServiceLoad {
         });
     }
 
-    public void setMessageHandlder(MessageSendHandler handlder){
-        try {
-            lock.lock();
-            messageHandlder = handlder;
-            signal.signalAll();
-        }finally {
-            lock.unlock();
-        }
-    }
-
     public MessageSendHandler getMessageHandlder() throws InterruptedException{
         try{
             lock.lock();
-            if(messageHandlder == null){
+            if(messageSendHandlers.isEmpty())
                 signal.await();
-            }
-            return messageHandlder;
-        }catch (InterruptedException var1){
-            throw var1;
+            return messageSendHandlers.get(0);
         }finally {
             lock.unlock();
         }
     }
 
     public void unload(){
+        MessageSendHandler handler = messageSendHandlers.remove(0);
+        handler.close();
         group.shutdownGracefully();
     }
 }

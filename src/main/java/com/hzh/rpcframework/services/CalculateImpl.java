@@ -6,7 +6,6 @@ package com.hzh.rpcframework.services;
 public class CalculateImpl implements Calculate{
     public Integer add(int m,int n){
         Integer result = Integer.valueOf(m+n);
-        System.out.println(result);
         return result;
     }
 }

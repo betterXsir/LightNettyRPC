@@ -2,13 +2,15 @@ package com.hzh.rpcframework.entity;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.msgpack.annotation.Message;
 
+import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by huzhenhua on 2017/8/2.
  */
-public class MessageReq {
+public class MessageReq implements Serializable{
     private long messageId;
     private String className;
     private String methodName;

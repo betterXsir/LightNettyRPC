@@ -12,10 +12,6 @@ public class RemoteServiceExecutor {
         rpcService = RpcServiceLoad.getInstance();
     }
 
-    public void setInetAdress(String host, int port){
-        rpcService.setInetAdress(host, port);
-    }
-
     public void upstart(){
         rpcService.load();
     }

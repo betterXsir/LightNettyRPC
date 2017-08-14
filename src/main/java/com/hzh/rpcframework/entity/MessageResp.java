@@ -2,11 +2,14 @@ package com.hzh.rpcframework.entity;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.msgpack.annotation.Message;
+
+import java.io.Serializable;
 
 /**
  * Created by huzhenhua on 2017/8/3.
  */
-public class MessageResp {
+public class MessageResp implements Serializable {
     private long messageId;
     private Object result;
     private String status;
@@ -36,6 +39,9 @@ public class MessageResp {
     }
 
     public String toString(){
-        return new ToStringBuilder(this, ToStringStyle.JSON_STYLE).toString();
+        return new ToStringBuilder(this, ToStringStyle.JSON_STYLE).
+                append("messageId", messageId)
+                .append("result", result)
+                .append("status", status).toString();
     }
 }
