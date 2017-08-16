@@ -1,7 +1,8 @@
 package com.hzh.rpcframework.clientstub;
 
-import com.hzh.rpcframework.messagepack.MsgDecoder;
-import com.hzh.rpcframework.messagepack.MsgEncoder;
+import com.hzh.rpcframework.serialize.MsgDecoder;
+import com.hzh.rpcframework.serialize.MsgEncoder;
+import com.hzh.rpcframework.serialize.protostuff.ProtostuffCodeUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -65,12 +66,13 @@ public class RpcServiceLoad {
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .handler(new ChannelInitializer<SocketChannel>() {
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
-                        // TODO: 2017/8/2 增加粘包半包支持,编码，解码
+                        ProtostuffCodeUtil util = new ProtostuffCodeUtil();
+                        util.setSelectMessage(true);
                         socketChannel.pipeline().addLast("frameDecoder",
                                 new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4,0,4));
-                        socketChannel.pipeline().addLast("msgpack decoder", new MsgDecoder());
+                        socketChannel.pipeline().addLast("msgpack decoder", new MsgDecoder(util));
                         socketChannel.pipeline().addLast("frameEncoder", new LengthFieldPrepender(4));
-                        socketChannel.pipeline().addLast("msgpack encoder", new MsgEncoder());
+                        socketChannel.pipeline().addLast("msgpack encoder", new MsgEncoder(util));
                         socketChannel.pipeline().addLast(new MessageSendHandler());
                     }
                 });

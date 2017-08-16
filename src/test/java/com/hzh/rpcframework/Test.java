@@ -16,13 +16,14 @@ import java.util.concurrent.CountDownLatch;
  */
 public class Test {
     private static CountDownLatch start = new CountDownLatch(1);
-    private static CountDownLatch end = new CountDownLatch(10000);
+    private static CountDownLatch end = new CountDownLatch(2000);
     public static void main(String[] args){
         StopWatch sw = new StopWatch();
         sw.start();
         RemoteServiceExecutor executor = new RemoteServiceExecutor();
         executor.upstart();
-        for(int i=0; i<10000; i++){
+        for(int i=0; i<2000; i++){
+            System.out.println(i);
             Thread thread = new Thread(new CalculateThread(executor), "Thread-"+i);
             thread.start();
         }

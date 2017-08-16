@@ -2,8 +2,8 @@ package com.hzh.rpcframework;
 
 import com.google.protobuf.Any;
 import com.google.protobuf.Message;
-import com.hzh.rpcframework.serialize.protobuf.AddressBookProtos;
-import com.hzh.rpcframework.serialize.protobuf.ErrorStatusOuterClass;
+import com.hzh.rpcframework.serialize.protostuff.AddressBookProtos;
+import com.hzh.rpcframework.serialize.protostuff.ErrorStatusOuterClass;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -52,6 +52,5 @@ public class ProtobufTest {
     public static void main(String[] args) throws Exception{
         ErrorStatusOuterClass.ErrorStatus.Builder errorStatus = ErrorStatusOuterClass.ErrorStatus.newBuilder();
         errorStatus.setMessage("Class Not Found.");
-        errorStatus.addDetails(Any.pack());
     }
 }

@@ -1,4 +1,4 @@
-package com.hzh.rpcframework.messagepack;
+package com.hzh.rpcframework.serialize;
 
 import com.hzh.rpcframework.entity.MessageReq;
 import com.hzh.rpcframework.serialize.SerializeUtil;
@@ -11,9 +11,11 @@ import org.msgpack.MessagePack;
  * Created by huzhenhua on 2017/8/3.
  */
 public class MsgEncoder extends MessageToByteEncoder<Object>{
+    private MessageCodeUtil util;
+    public MsgEncoder(MessageCodeUtil util){
+        this.util =  util;
+    }
     protected void encode(ChannelHandlerContext channelHandlerContext, Object o, ByteBuf byteBuf) throws Exception {
-        MessagePack msgpack = new MessagePack();
-        byte[] raw = SerializeUtil.object2Bytes(o);
-        byteBuf.writeBytes(raw);
+        util.encode(o, byteBuf);
     }
 }

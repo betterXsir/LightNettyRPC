@@ -1,15 +1,14 @@
 package com.hzh.rpcframework.serverstub;
 
 import com.hzh.rpcframework.entity.MessageKeyVal;
-import com.hzh.rpcframework.messagepack.MsgDecoder;
-import com.hzh.rpcframework.messagepack.MsgEncoder;
-import io.netty.bootstrap.Bootstrap;
+import com.hzh.rpcframework.serialize.MsgDecoder;
+import com.hzh.rpcframework.serialize.MsgEncoder;
+import com.hzh.rpcframework.serialize.protostuff.ProtostuffCodeUtil;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
 import org.springframework.beans.BeansException;
@@ -81,10 +80,11 @@ public class RpcTransactionProcessing implements ApplicationContextAware, Initia
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
+                        ProtostuffCodeUtil util = new ProtostuffCodeUtil();
                         socketChannel.pipeline().addLast("frameEncoder", new LengthFieldPrepender(4));
-                        socketChannel.pipeline().addLast("msgpack encoder", new MsgEncoder());
+                        socketChannel.pipeline().addLast("msgpack encoder", new MsgEncoder(util));
                         socketChannel.pipeline().addLast("frameDecoder", new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4, 0, 4));
-                        socketChannel.pipeline().addLast("msgpack decoder", new MsgDecoder());
+                        socketChannel.pipeline().addLast("msgpack decoder", new MsgDecoder(util));
                         socketChannel.pipeline().addLast(new MessageRecvHandler(handlerMap));
                     }
                 });
